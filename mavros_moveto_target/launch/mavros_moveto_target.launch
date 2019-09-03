@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="id" default="1" />
+	<arg name="output" default="screen" />
+	
+	<!-- MoveToTarget Action Server NODE -->
+    <node pkg="mavros_moveto_target" name="mavros_moveto_target_$(arg id)" type="moveto_target_action" output="$(arg output)">
+		<rosparam command="load" file="$(find mavros_moveto_target)/param/mavros_moveto_target_params.yaml" />
+	</node>
+
+</launch>

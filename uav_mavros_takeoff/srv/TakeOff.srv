@@ -1,0 +1,5 @@
+# Define the request
+float64 altitude
+---
+# Define the result
+bool success

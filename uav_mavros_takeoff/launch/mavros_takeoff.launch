@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="id" default="1" />
+	<arg name="output" default="screen" />
+	<arg name="ros_api" default="action" />
+	
+	<!-- TakeOff Action/Service NODE -->
+    <node pkg="uav_mavros_takeoff" name="mavros_takeoff_$(arg id)" type="takeoff_$(arg ros_api)" output="$(arg output)">
+		<rosparam command="load" file="$(find uav_mavros_takeoff)/param/mavros_takeoff_params.yaml" />
+	</node>
+
+</launch>

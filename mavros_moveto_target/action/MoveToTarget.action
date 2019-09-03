@@ -1,0 +1,7 @@
+# Define the goal
+uint32 target_id						# ID of the target
+geometry_msgs/PoseStamped pose			# position of the target
+---
+# Define the result
+---
+# Define the feeeback

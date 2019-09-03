@@ -1,0 +1,5 @@
+pos_tolerance:   0.8                             # tolerance error accepted to consider position reached
+frequency:       10.0                            # frequency for loop
+target_update:   bridge/events/target_update     # topic to receive target updates
+target_lost:     bridge/events/target_lost       # topic to receive target lost event
+target_rescued:  target_rescued                  # topic to send target rescued event
