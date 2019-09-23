@@ -210,10 +210,10 @@ int main(int argc, char **argv) {
 	goal_pos_pub = nh.advertise < geometry_msgs::PoseStamped > (goal_pos_topic, 1);
 
 	string stop_topic = "pos_controller/stop";
-	stop_pos_pub = nh.advertise < std_msgs::Empty > (stop_topic, 1);
+	stop_pos_pub = nh.advertise < std_msgs::Empty > (stop_topic, 1, true);
 
 	//init target rescued publisher
-	target_rescued_pub = nh.advertise < cpswarm_msgs::TargetPositionEvent > (target_rescued_topic, 1);
+	target_rescued_pub = nh.advertise < cpswarm_msgs::TargetPositionEvent > (target_rescued_topic, 1, true);
 	//subscribe to target update
 	trg_update_sub = nh.subscribe < cpswarm_msgs::TargetPositionEvent > (target_update_topic, 10, targetUpdate_cb);
 	//subscribe to target lost

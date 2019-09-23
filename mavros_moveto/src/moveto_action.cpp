@@ -151,10 +151,10 @@ int main(int argc, char **argv) {
 	local_pos_sub = nh.subscribe < geometry_msgs::PoseStamped > (local_pos_topic, 1, localPosition_cb);
 
     string goal_pos_topic = "pos_controller/goal_position";
-	goal_pos_pub = nh.advertise < geometry_msgs::PoseStamped > (goal_pos_topic, 1);
+	goal_pos_pub = nh.advertise < geometry_msgs::PoseStamped > (goal_pos_topic, 1, true);
 
 	string stop_topic = "pos_controller/stop";
-	stop_pos_pub = nh.advertise < std_msgs::Empty > (stop_topic, 1);
+	stop_pos_pub = nh.advertise < std_msgs::Empty > (stop_topic, 1, true);
 
 	ros::Rate rate(freq);
 	// wait for FCU connection
