@@ -17,7 +17,7 @@ typedef actionlib::SimpleActionServer<mavros_moveto_target::MoveToTargetAction> 
 // Variables
 ros::Publisher goal_pos_pub;
 ros::Publisher stop_pos_pub;
-ros::Publisher target_rescued_pub;
+ros::Publisher target_done_pub;
 
 ros::Subscriber state_sub;
 ros::Subscriber pos_sub;
@@ -150,15 +150,15 @@ void execute_cb(const mavros_moveto_target::MoveToTargetGoal::ConstPtr& goal, Se
 	if (!target_lost) {
 		ROS_INFO("MOVETO_TRG - MoveToTarget completed");
 		ROS_INFO("MOVETO_TRG - Position reached: %.2f, %.2f", position.pose.position.x, position.pose.position.x);
-		//Inform others TARGET RESCUED
+		//Inform others TARGET DONE
 		cpswarm_msgs::TargetPositionEvent target_msg;
 		target_msg.header.stamp = ros::Time::now();
-		target_msg.swarmio.name = "target_rescued";
+		target_msg.swarmio.name = "target_done";
 		target_msg.swarmio.node = "";
 		target_msg.id = target_id;
 		target_msg.pose = goal->pose;
-		target_rescued_pub.publish(target_msg);
-		ROS_INFO("MOVETO_TRG - Target rescued event SENT");
+		target_done_pub.publish(target_msg);
+		ROS_INFO("MOVETO_TRG - Target done event SENT");
 	} else {
 		ROS_INFO("MOVETO_TRG - Target Lost, STOP moving");
 	}
@@ -190,9 +190,9 @@ int main(int argc, char **argv) {
 	//Get target lost topic
 	string target_lost_topic;
 	nh.getParam(ros::this_node::getName() + "/target_lost", target_lost_topic);
-	//Get target_rescued_topic
-	string target_rescued_topic;
-	nh.getParam(ros::this_node::getName() + "/target_rescued", target_rescued_topic);
+	//Get target_done_topic
+	string target_done_topic;
+	nh.getParam(ros::this_node::getName() + "/target_done", target_done_topic);
 
 	string arming_topic = "mavros/cmd/arming";
 	arming_client = nh.serviceClient < mavros_msgs::CommandBool > (arming_topic);
@@ -212,8 +212,8 @@ int main(int argc, char **argv) {
 	string stop_topic = "pos_controller/stop";
 	stop_pos_pub = nh.advertise < std_msgs::Empty > (stop_topic, 1, true);
 
-	//init target rescued publisher
-	target_rescued_pub = nh.advertise < cpswarm_msgs::TargetPositionEvent > (target_rescued_topic, 1, true);
+	//init target done publisher
+	target_done_pub = nh.advertise < cpswarm_msgs::TargetPositionEvent > (target_done_topic, 1, true);
 	//subscribe to target update
 	trg_update_sub = nh.subscribe < cpswarm_msgs::TargetPositionEvent > (target_update_topic, 10, targetUpdate_cb);
 	//subscribe to target lost
