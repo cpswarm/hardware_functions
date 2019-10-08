@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="id" default="1" />
+	<arg name="output" default="screen" />
+	
+	<!-- Moveto action server -->
+    <node pkg="moveto" type="moveto" name="moveto_$(arg id)" output="$(arg output)">
+		<rosparam command="load" file="$(find moveto)/param/moveto.yaml" />
+	</node>
+
+</launch>
