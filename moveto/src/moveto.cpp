@@ -189,6 +189,7 @@ int main (int argc, char **argv)
 
     // init ros communication
     out_of_bounds_client = nh.serviceClient<cpswarm_msgs::OutOfBounds>("area/out_of_bounds");
+    out_of_bounds_client.waitForExistence();
     Subscriber pose_sub = nh.subscribe("pos_provider/pose", queue_size, pose_callback);
     pose_pub = nh.advertise<geometry_msgs::PoseStamped>("pos_controller/goal_position", queue_size, true);
 
