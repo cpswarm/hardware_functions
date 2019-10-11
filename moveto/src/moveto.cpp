@@ -96,7 +96,11 @@ bool out_of_bounds (geometry_msgs::Pose pose)
  */
 bool reached (geometry_msgs::Pose goal)
 {
-    return dist(pose, goal) < goal_tolerance && remainder(get_yaw(pose) - get_yaw(goal), 2*M_PI) + M_PI < yaw_tolerance;
+    ROS_DEBUG("Yaw %.2f --> %.2f", get_yaw(pose), get_yaw(goal));
+    ROS_DEBUG("Pose (%.2f,%.2f) --> (%.2f,%.2f)", pose.position.x, pose.position.y, goal.position.x, goal.position.y);
+    ROS_DEBUG("%.2f > %.2f OR %.2f > %.2f", dist(pose, goal), goal_tolerance, abs(remainder(get_yaw(pose) - get_yaw(goal), 2*M_PI)), yaw_tolerance);
+
+    return dist(pose, goal) <= goal_tolerance && abs(remainder(get_yaw(pose) - get_yaw(goal), 2*M_PI)) <= yaw_tolerance;
 }
 
 /**
@@ -136,8 +140,10 @@ void moveto_callback(const move_base_msgs::MoveBaseGoal::ConstPtr& goal, action_
     // send goal pose to cps controller
     pose_pub.publish(goal->target_pose);
 
+    ROS_DEBUG("Move to (%.2f,%.2f)", goal->target_pose.pose.position.x, goal->target_pose.pose.position.y);
+
     // wait until cps reached goal
-    while (ok() && reached(goal->target_pose.pose) == false) {
+    while (ok() && reached(goal->target_pose.pose) == false && as->isPreemptRequested() == false) {
         // provide feedback to client
         geometry_msgs::PoseStamped ps;
         ps.header.stamp = Time::now();
