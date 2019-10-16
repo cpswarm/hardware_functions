@@ -10,7 +10,7 @@ project(moveto)
 find_package(catkin REQUIRED COMPONENTS roscpp tf2 actionlib geometry_msgs move_base_msgs cpswarm_msgs)
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -114,13 +114,14 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(
-#   ${PROJECT_NAME}
-#   src/${PROJECT_NAME}.cpp
-# )
+add_library(
+  action_server
+  src/lib/action_server.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -146,7 +147,9 @@ add_executable(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(
+  ${PROJECT_NAME}
+  action_server
   ${catkin_LIBRARIES}
 )
 
