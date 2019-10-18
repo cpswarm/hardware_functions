@@ -98,7 +98,7 @@ void action_server::moveto_callback(const move_base_msgs::MoveBaseGoal::ConstPtr
     // send goal pose to cps controller
     pose_pub.publish(goal->target_pose);
 
-    ROS_ERROR("Move to (%.2f,%.2f)", goal->target_pose.pose.position.x, goal->target_pose.pose.position.y);
+    ROS_INFO("Move to (%.2f,%.2f)", goal->target_pose.pose.position.x, goal->target_pose.pose.position.y);
 
     // wait until cps reached goal
     while (ok() && reached(goal->target_pose.pose) == false && server.isPreemptRequested() == false) {
