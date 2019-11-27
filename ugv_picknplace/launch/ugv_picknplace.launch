@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="output" default="screen" />
+	<arg name="id_robot" default="robot_0"/>
+
+	
+
+	<!-- PickAndPlace action server -->
+	<node pkg="ugv_picknplace" type="pick_and_place.py" name="pick_and_place" output="$(arg output)">
+		<param name="id_robot" type="string" value="$(arg id_robot)"/>
+	</node>
+
+</launch>
+
