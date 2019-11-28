@@ -96,7 +96,7 @@ class PickAndPlaceComponent(RComponent):
         try:
             self.robot_id = rospy.get_param('~id_robot', default = "robot_0")
         except:
-            rospy.logerr("%s::rosSetup: you have not set a robot_base_frame parameter. I cannot work without it" % self._node_name)
+            rospy.logerr("%s::rosSetup: you have not set a id_robot parameter. I cannot work without it: %s" % self._node_name)
             return -1
         
         try:
@@ -165,7 +165,7 @@ class PickAndPlaceComponent(RComponent):
 
     def generateGoalDock(self, userdata, default_goal):
         dock_goal = DockGoal()
-        dock_goal.dock_frame = "robot_1_cart"
+        dock_goal.dock_frame = self.robot_id + "_cart"
         dock_goal.robot_dock_frame = self.robot_id + "_base_footprint"
         dock_goal.dock_offset.x = -0.1
         return dock_goal   
