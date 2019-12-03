@@ -15,7 +15,7 @@ from actionlib_msgs.msg import *
 
 import actionlib_msgs.msg
 
-from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseActionGoal
+from move_base_msgs.msg import *
 from robotnik_navigation_msgs.msg import DockAction, DockGoal, MoveAction, MoveGoal
 from robotnik_msgs.msg import *
 from cpswarm_msgs.msg import *
@@ -23,6 +23,11 @@ from dynamic_reconfigure.srv import *
 from dynamic_reconfigure.msg import *
 from rcomponent import RComponent
 
+class Pose:
+    def __init__(self, x, y, theta):
+        self.x = x
+        self.y = y
+        self.theta = theta
 
 class PickAndPlaceComponent(RComponent):
     def __init__(self, args):
@@ -46,7 +51,7 @@ class PickAndPlaceComponent(RComponent):
         
         smallfoot = DoubleParameter()
         smallfoot.name = 'robot_radius'
-        smallfoot.value = 0.18
+        smallfoot.value = 0.22
         self.smallfootprint = ReconfigureRequest()
         self.smallfootprint.config.doubles.append(smallfoot)
         self.smallfootprint.config.strs.append(nonesquarefootprint)
@@ -59,7 +64,7 @@ class PickAndPlaceComponent(RComponent):
         
         tebsmallfoot = DoubleParameter()
         tebsmallfoot.name = 'radius'
-        tebsmallfoot.value = 0.18
+        tebsmallfoot.value = 0.22
         self.tebsmallfootprint = ReconfigureRequest()
         self.tebsmallfootprint.config.doubles.append(tebsmallfoot)
         
@@ -88,23 +93,26 @@ class PickAndPlaceComponent(RComponent):
         
         self.tf_listener = tf.TransformListener()
         self.createStateMachines()        
-        self._feedback = cpswarm_msgs.msg.PickAndPlaceFeedback()
-        self._result = cpswarm_msgs.msg.PickAndPlaceResult()
-        self._as = actionlib.SimpleActionServer(self._action_name, cpswarm_msgs.msg.PickAndPlaceAction, execute_cb=self.action_callback, auto_start = False)        
-        self._as.start()
-        
-        try:
-            self.robot_id = rospy.get_param('~id_robot', default = "robot_0")
-        except:
-            rospy.logerr("%s::rosSetup: you have not set a id_robot parameter. I cannot work without it: %s" % self._node_name)
-            return -1
+        self._result = PickAndPlaceResult()
+        self._as = actionlib.SimpleActionServer(self._action_name, PickAndPlaceAction, execute_cb=self.action_callback, auto_start = False)        
+        self._as.start()        
+
+        self.robot_id = rospy.get_param('~id_robot', default = "robot_0")
+
+        #read place positions
+        self.place_positions = []
+        for i in range(10):
+            place_x = rospy.get_param('~assignments_table/cart%s/x' %i, default = "0.0")
+            place_y = rospy.get_param('~assignments_table/cart%s/y' %i, default = "0.0")
+            place_theta = rospy.get_param('~assignments_table/cart%s/theta' %i, default = "0.0")        
+            self.place_positions.append(Pose(place_x,place_y,place_theta))           
         
         try:
             self.simulation = rospy.get_param('~sim', default = True)
         except:
             self.simulation = False
             rospy.logwarn("%s::rosSetup: Simulation is false")
-       
+
         if self.checkForActionServer(self.move_base_client, MoveBaseAction) == False:
             rospy.logerr("%s::rosSetup: I cannot connect to ActionServer %s. I cannot work without it" % (self._node_name, self.move_base_client))
             return -1
@@ -149,19 +157,21 @@ class PickAndPlaceComponent(RComponent):
         move_goal.goal.x = 1 
         return move_goal
 
-    def generateGoalMoveBase(self, frame_id, where):
+    def generateGoalMoveBasePick(self, userdata, default_goal):        
         move_base_goal = MoveBaseGoal()
-        move_base_goal.target_pose.header.frame_id = frame_id
-        move_base_goal.target_pose.pose.position.x = where.x
-        move_base_goal.target_pose.pose.position.y = where.y
-        move_base_goal.target_pose.pose.orientation = geometry_msgs.msg.Quaternion(*tf_conversions.transformations.quaternion_from_euler(0, 0, where.theta))
+        move_base_goal.target_pose = self.last_pick_and_place_mission.target_pose
         return move_base_goal
 
-    def generateGoalMoveBasePick(self, userdata, default_goal):
-        return self.generateGoalMoveBase(self.last_pick_and_place_mission.goal.frame_id, self.last_pick_and_place_mission.goal.pick)
 
     def generateGoalMoveBasePlace(self, userdata, default_goal):
-        return self.generateGoalMoveBase(self.last_pick_and_place_mission.goal.frame_id, self.last_pick_and_place_mission.goal.place)
+        #return self.generateGoalMoveBase(self.last_pick_and_place_mission.target_pose.header.frame_id, self.last_pick_and_place_mission.goal.place)
+        print self.last_pick_and_place_mission.box_id
+        move_base_goal = MoveBaseGoal()
+        move_base_goal.target_pose.header.frame_id = self.last_pick_and_place_mission.target_pose.header.frame_id
+        move_base_goal.target_pose.pose.position.x = self.place_positions[self.last_pick_and_place_mission.box_id].x
+        move_base_goal.target_pose.pose.position.y = self.place_positions[self.last_pick_and_place_mission.box_id].y
+        move_base_goal.target_pose.pose.orientation = geometry_msgs.msg.Quaternion(*tf_conversions.transformations.quaternion_from_euler(0, 0, self.place_positions[self.last_pick_and_place_mission.box_id].theta))
+        return move_base_goal
 
     def generateGoalDock(self, userdata, default_goal):
         dock_goal = DockGoal()
@@ -278,7 +288,7 @@ class PickAndPlaceComponent(RComponent):
     def action_callback(self, goal):
         
         try:
-            self.tf_listener.waitForTransform(goal.goal.frame_id, self.robot_id + "_base_footprint", rospy.Time(), rospy.Duration(4.0))
+            self.tf_listener.waitForTransform(goal.target_pose.header.frame_id, self.robot_id + "_base_footprint", rospy.Time(), rospy.Duration(4.0))
         except tf.Exception:
             rospy.logerr("%s::service_callback: I cannot find transform between %s -> %s. I suppose move_base also cannot do that, so I'm not executing this mission" % (self._node_name, request.frame_id, self.robot_id + "_base_footprint") )
             response = PickAndPlaceResult()
