@@ -20,8 +20,10 @@ from robotnik_navigation_msgs.msg import DockAction, DockGoal, MoveAction, MoveG
 from robotnik_msgs.msg import *
 from cpswarm_msgs.msg import *
 from dynamic_reconfigure.srv import *
+from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.msg import *
 from rcomponent import RComponent
+from ugv_picknplace.cfg import PicknPlaceConfig
 
 class Pose:
     def __init__(self, x, y, theta):
@@ -80,6 +82,12 @@ class PickAndPlaceComponent(RComponent):
         self.squarefootprint = ReconfigureRequest()
         self.squarefootprint.config.strs.append(bigsquarefootprint) 
 
+        #reconfigure param server
+        self.reconfig_srv = Server(PicknPlaceConfig, self.reconfig_cb, namespace="assignments_table")
+
+    def reconfig_cb(self,config, level):
+        rospy.loginfo("Reconfigure Request Received!")
+        return config
        
     def rosSetup(self):
         
@@ -102,9 +110,9 @@ class PickAndPlaceComponent(RComponent):
         #read place positions
         self.place_positions = []
         for i in range(10):
-            place_x = rospy.get_param('~assignments_table/cart%s/x' %i, default = "0.0")
-            place_y = rospy.get_param('~assignments_table/cart%s/y' %i, default = "0.0")
-            place_theta = rospy.get_param('~assignments_table/cart%s/theta' %i, default = "0.0")        
+            place_x = rospy.get_param('~cart%s_x' %i, default = "0.0")
+            place_y = rospy.get_param('~cart%s_y' %i, default = "0.0")
+            place_theta = rospy.get_param('~cart%s_theta' %i, default = "0.0")        
             self.place_positions.append(Pose(place_x,place_y,place_theta))           
         
         try:
