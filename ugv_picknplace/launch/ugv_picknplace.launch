@@ -2,12 +2,12 @@
 <launch>
 	<arg name="output" default="screen" />
 	<arg name="id_robot" default="robot_0"/>
-
-	
+	<arg name="config_file" default="$(find ugv_picknplace)/config/picknplace.yaml"/>
 
 	<!-- PickAndPlace action server -->
 	<node pkg="ugv_picknplace" type="pick_and_place.py" name="pick_and_place" output="$(arg output)">
 		<param name="id_robot" type="string" value="$(arg id_robot)"/>
+		<rosparam command="load" file="$(arg config_file)" />
 	</node>
 
 </launch>
