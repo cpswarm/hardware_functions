@@ -9,7 +9,7 @@ project(ugv_picknplace)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
     roscpp
-    rcomponent
+    #rcomponent
     robotnik_msgs
     #robotnik_navigation_msgs
     dynamic_reconfigure
