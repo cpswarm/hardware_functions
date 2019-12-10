@@ -53,7 +53,7 @@ class PickAndPlaceComponent(RComponent):
         
         smallfoot = DoubleParameter()
         smallfoot.name = 'robot_radius'
-        smallfoot.value = 0.22
+        smallfoot.value = 0.25
         self.smallfootprint = ReconfigureRequest()
         self.smallfootprint.config.doubles.append(smallfoot)
         self.smallfootprint.config.strs.append(nonesquarefootprint)
@@ -66,7 +66,7 @@ class PickAndPlaceComponent(RComponent):
         
         tebsmallfoot = DoubleParameter()
         tebsmallfoot.name = 'radius'
-        tebsmallfoot.value = 0.22
+        tebsmallfoot.value = 0.25
         self.tebsmallfootprint = ReconfigureRequest()
         self.tebsmallfootprint.config.doubles.append(tebsmallfoot)
         
@@ -83,7 +83,7 @@ class PickAndPlaceComponent(RComponent):
         self.squarefootprint.config.strs.append(bigsquarefootprint) 
 
         #reconfigure param server
-        self.reconfig_srv = Server(PicknPlaceConfig, self.reconfig_cb, namespace="assignments_table")
+        self.reconfig_srv = Server(PicknPlaceConfig, self.reconfig_cb)
 
     def reconfig_cb(self,config, level):
         rospy.loginfo("Reconfigure Request Received!")
@@ -293,18 +293,19 @@ class PickAndPlaceComponent(RComponent):
         #self.introspection_sm = smach_ros.IntrospectionServer('demo',  self.sm_pick_and_place, '/SM_ROOT')
         #self.introspection_sm.start()
 
-    def action_callback(self, goal):
-        
+    def action_callback(self, goal):        
+
         try:
             self.tf_listener.waitForTransform(goal.target_pose.header.frame_id, self.robot_id + "_base_footprint", rospy.Time(), rospy.Duration(4.0))
         except tf.Exception:
-            rospy.logerr("%s::service_callback: I cannot find transform between %s -> %s. I suppose move_base also cannot do that, so I'm not executing this mission" % (self._node_name, request.frame_id, self.robot_id + "_base_footprint") )
+            rospy.logerr("%s::service_callback: I cannot find transform between %s -> %s. I suppose move_base also cannot do that, so I'm not executing this mission" % (self._node_name, goal.target_pose.header.frame_id, self.robot_id + "_base_footprint") )
             response = PickAndPlaceResult()
             response.success = False
             response.message = self._node_name + ' cannot navigate to that goal'
             return response
         
         self.last_pick_and_place_mission = goal
+        
 
         # Execute SMACH plan
         outcome = self.sm_pick_and_place.execute()
@@ -315,7 +316,7 @@ class PickAndPlaceComponent(RComponent):
             self._response.message = self._node_name + ' completed the mission'
         else:
             self._response.message = self._node_name + ' failed to complete the mission result=%s)' % outcome
-        print self._response
+        # print self._response
         # remove received pick and place goal, just in case
         self.last_pick_and_place_mission = PickAndPlaceGoal()
         
