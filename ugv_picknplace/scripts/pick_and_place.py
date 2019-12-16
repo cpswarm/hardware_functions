@@ -12,8 +12,7 @@ import geometry_msgs.msg
 
 import actionlib
 from actionlib_msgs.msg import *
-
-import actionlib_msgs.msg
+from std_srvs.srv import Empty, EmptyRequest
 
 from move_base_msgs.msg import *
 from robotnik_navigation_msgs.msg import DockAction, DockGoal, MoveAction, MoveGoal
@@ -45,6 +44,7 @@ class PickAndPlaceComponent(RComponent):
         self.global_set_parameter_service_name = 'move_base/global_costmap/set_parameters'       
         self.local_set_parameter_service_name = 'move_base/local_costmap/set_parameters'   
         self.teb_set_parameter_service_name = 'move_base/TebLocalPlannerROS/set_parameters'
+        self.clear_costmap_service_name = 'move_base/clear_costmaps'
         
         #static parameters
         nonesquarefootprint = StrParameter()
@@ -84,6 +84,9 @@ class PickAndPlaceComponent(RComponent):
 
         #reconfigure param server
         self.reconfig_srv = Server(PicknPlaceConfig, self.reconfig_cb)
+
+        #client service for clear_costmaps
+        #self.clear_costmaps_srv = rospy.ServiceProxy(self.clear_costmap_service_name, std_srvs.srv.Empty)
 
     def reconfig_cb(self,config, level):
         rospy.loginfo("Reconfigure Request Received!")
@@ -223,11 +226,15 @@ class PickAndPlaceComponent(RComponent):
             smach.StateMachine.add('SET_LOCALSMALLFOOTPRINT',
                                 smach_ros.ServiceState(self.local_set_parameter_service_name,Reconfigure,
                                 request = self.smallfootprint),
-                                {'succeeded':'NAVIGATE_TO_CART'})                    
+                                {'succeeded':'CLEAR_COSTMAPS_PREPICK'})                    
+            smach.StateMachine.add('CLEAR_COSTMAPS_PREPICK',
+                                smach_ros.ServiceState(self.clear_costmap_service_name,Empty,
+                                request = EmptyRequest()),
+                                {'succeeded':'NAVIGATE_TO_CART'})
             smach.StateMachine.add('NAVIGATE_TO_CART',
                                 smach_ros.SimpleActionState(self.move_base_client, MoveBaseAction,
                                 goal_cb = self.generateGoalMoveBasePick),
-                                {'succeeded':'LOWER'})            
+                                {'succeeded':'LOWER'}) 
             smach.StateMachine.add('LOWER',
                                 smach_ros.SimpleActionState(self.elevator_client,SetElevatorAction,
                                 goal_cb = self.elevatordown),
@@ -235,7 +242,7 @@ class PickAndPlaceComponent(RComponent):
             smach.StateMachine.add('DOCK_TO_CART',
                                 smach_ros.SimpleActionState(self.cart_docker_client, DockAction,
                                 goal_cb = self.generateGoalDock),
-                                {'succeeded':'PREPICK_ROTATION','aborted':'NAVIGATE_TO_CART'})
+                                {'succeeded':'PREPICK_ROTATION','aborted':'CLEAR_COSTMAPS_PREPICK'})
             smach.StateMachine.add('PREPICK_ROTATION',
                                 smach_ros.SimpleActionState(self.move_client, MoveAction, goal_cb = self.rotate180),
                                 {'succeeded': 'RAISE'})                                 
@@ -253,10 +260,14 @@ class PickAndPlaceComponent(RComponent):
 
 
         with sm_place_cart:
+            smach.StateMachine.add('CLEAR_COSTMAPS_PREPLACE',
+                                smach_ros.ServiceState(self.clear_costmap_service_name,Empty,
+                                request = EmptyRequest()),
+                                {'succeeded':'NAVIGATE_TO_PLACE'})
             smach.StateMachine.add('NAVIGATE_TO_PLACE',
                                 smach_ros.SimpleActionState(self.move_base_client, MoveBaseAction,
                                 goal_cb = self.generateGoalMoveBasePlace),
-                                {'succeeded':'LOWER'})
+                                {'succeeded':'LOWER','aborted':'CLEAR_COSTMAPS_PREPLACE'})
             smach.StateMachine.add('LOWER',
                                 smach_ros.SimpleActionState(self.elevator_client,SetElevatorAction,                                
                                 goal_cb = self.elevatordown),
