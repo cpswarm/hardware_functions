@@ -111,12 +111,7 @@ class PickAndPlaceComponent(RComponent):
         self.robot_id = rospy.get_param('~id_robot', default = "robot_0")
 
         #read place positions
-        self.place_positions = []
-        for i in range(10):
-            place_x = rospy.get_param('~cart%s_x' %i, default = "0.0")
-            place_y = rospy.get_param('~cart%s_y' %i, default = "0.0")
-            place_theta = rospy.get_param('~cart%s_theta' %i, default = "0.0")        
-            self.place_positions.append(Pose(place_x,place_y,place_theta))           
+        self.updatePlacePoses()  
         
         try:
             self.simulation = rospy.get_param('~sim', default = True)
@@ -149,6 +144,14 @@ class PickAndPlaceComponent(RComponent):
         
         return 0
  
+    def updatePlacePoses(self):
+        self.place_positions = []
+        for i in range(10):
+            place_x = rospy.get_param('~cart%s_x' %i, default = "0.0")
+            place_y = rospy.get_param('~cart%s_y' %i, default = "0.0")
+            place_theta = rospy.get_param('~cart%s_theta' %i, default = "0.0")        
+            self.place_positions.append(Pose(place_x,place_y,place_theta))
+
     def checkForActionServer(self, server, action_type):
         dummy_action_client = actionlib.SimpleActionClient(server, action_type)
         if dummy_action_client.wait_for_server(rospy.Duration(3)): 
@@ -175,8 +178,9 @@ class PickAndPlaceComponent(RComponent):
 
 
     def generateGoalMoveBasePlace(self, userdata, default_goal):
-        #return self.generateGoalMoveBase(self.last_pick_and_place_mission.target_pose.header.frame_id, self.last_pick_and_place_mission.goal.place)
-        print self.last_pick_and_place_mission.box_id
+        
+        #read place positions
+        self.updatePlacePoses()
         move_base_goal = MoveBaseGoal()
         move_base_goal.target_pose.header.frame_id = self.last_pick_and_place_mission.target_pose.header.frame_id
         move_base_goal.target_pose.pose.position.x = self.place_positions[self.last_pick_and_place_mission.box_id].x
@@ -234,7 +238,7 @@ class PickAndPlaceComponent(RComponent):
             smach.StateMachine.add('NAVIGATE_TO_CART',
                                 smach_ros.SimpleActionState(self.move_base_client, MoveBaseAction,
                                 goal_cb = self.generateGoalMoveBasePick),
-                                {'succeeded':'LOWER'}) 
+                                {'succeeded':'LOWER','aborted':'CLEAR_COSTMAPS_PREPICK'}) 
             smach.StateMachine.add('LOWER',
                                 smach_ros.SimpleActionState(self.elevator_client,SetElevatorAction,
                                 goal_cb = self.elevatordown),
