@@ -41,9 +41,9 @@ int main(int argc, char **argv) {
 	while (ros::ok()) {
 		if(aborting) {
 			set_mode_client.call(land_set_mode);
-//			if(land_set_mode.response.mode_sent) {
-//				aborting = 0;
-//			}
+			if(land_set_mode.response.mode_sent) {
+				aborting = 0;
+			}
 		}
 
 		ros::spinOnce();
