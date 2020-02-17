@@ -2,5 +2,5 @@ pos_tolerance: 0.1    # position reached tolerance
 frequency: 10.0       # loop rate
 stabilize_time: 5     # wait n seconds to stabilize position after takeoff
 takeoff_steps: 1      # num of steps to subdivide the takeoff phase
-offset_x: -0.5         # offset (x direction) from initial position to reach during takeoff
-offset_Y: 0.0         # offset (y direction) from initial position to reach during takeoff
+offset_x: -0.7         # offset (x direction) from initial position to reach during takeoff
+offset_y: 0.0         # offset (y direction) from initial position to reach during takeoff

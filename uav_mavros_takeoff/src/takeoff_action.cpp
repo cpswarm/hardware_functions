@@ -161,9 +161,9 @@ int main(int argc, char **argv) {
 	//Get takeoff num steps
 	nh.getParam(ros::this_node::getName() + "/takeoff_steps", takeoff_steps);
 	//Get takeoff offset x direction
-	nh.getParam(ros::this_node::getName() + "/offset_x", offset_x);
+	nh.getParam(ros::this_node::getName() + "/offset_x", offset_x, 0.0);
 	//Get takeoff offset y direction
-	nh.getParam(ros::this_node::getName() + "/offset_y", offset_y);
+	nh.getParam(ros::this_node::getName() + "/offset_y", offset_y, 0.0);
 
 	string arming_topic = "mavros/cmd/arming";
 	arming_client = nh.serviceClient < mavros_msgs::CommandBool > (arming_topic);
