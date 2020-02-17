@@ -25,7 +25,8 @@ geometry_msgs::PoseStamped local_position;
 bool local_position_received = false;
 double pos_tolerance;
 double freq;
-double initial_yaw;
+double offset_x;
+double offset_y;
 int stabilize_time;
 int takeoff_steps;
 
@@ -80,8 +81,8 @@ bool execute_cb(const uav_mavros_takeoff::TakeOffGoal::ConstPtr& goal, Server* a
 
 	// set target position
 	geometry_msgs::PoseStamped goal_position;
-	goal_position.pose.position.x = local_position.pose.position.x;
-    goal_position.pose.position.y = local_position.pose.position.y;
+	goal_position.pose.position.x = local_position.pose.position.x + offset_x;
+    goal_position.pose.position.y = local_position.pose.position.y + offset_y;
     goal_position.pose.position.z = local_position.pose.position.z;
     goal_position.pose.orientation = local_position.pose.orientation;
 
@@ -159,8 +160,10 @@ int main(int argc, char **argv) {
 	nh.getParam(ros::this_node::getName() + "/stabilize_time", stabilize_time);
 	//Get takeoff num steps
 	nh.getParam(ros::this_node::getName() + "/takeoff_steps", takeoff_steps);
-	//Get initial_yaw
-	nh.getParam(ros::this_node::getName() + "/initial_yaw", initial_yaw);
+	//Get takeoff offset x direction
+	nh.getParam(ros::this_node::getName() + "/offset_x", offset_x);
+	//Get takeoff offset y direction
+	nh.getParam(ros::this_node::getName() + "/offset_y", offset_y);
 
 	string arming_topic = "mavros/cmd/arming";
 	arming_client = nh.serviceClient < mavros_msgs::CommandBool > (arming_topic);
