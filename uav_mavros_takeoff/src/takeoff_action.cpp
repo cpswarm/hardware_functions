@@ -4,12 +4,12 @@
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
-#include <uav_mavros_takeoff/TakeOffAction.h>
+#include <cpswarm_msgs/TakeoffAction.h>
 #include <math.h>
 
 using namespace std;
 
-typedef actionlib::SimpleActionServer<uav_mavros_takeoff::TakeOffAction> Server;
+typedef actionlib::SimpleActionServer<cpswarm_msgs::TakeoffAction> Server;
 
 // Variables
 ros::Publisher goal_pos_pub;
@@ -70,7 +70,7 @@ void localPosition_cb(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 	ROS_DEBUG_ONCE("TAKEOFF - Got local position: [%.2f, %.2f, %.2f]", msg->pose.position.x, msg->pose.position.y, msg->pose.position.z);
 }
 
-bool execute_cb(const uav_mavros_takeoff::TakeOffGoal::ConstPtr& goal, Server* as) {
+bool execute_cb(const cpswarm_msgs::TakeoffGoal::ConstPtr& goal, Server* as) {
     ROS_DEBUG("TAKEOFF - Executing Takeoff action..");
 
 	double altitude_step = goal->altitude / takeoff_steps;

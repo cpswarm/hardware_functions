@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   mavros
   mavros_msgs
   message_generation
+  cpswarm_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -61,11 +62,11 @@ add_service_files(DIRECTORY srv
 )
 
 ## Generate actions in the 'action' folder
-add_action_files(
-	DIRECTORY action 
-	FILES
-	TakeOff.action
-)
+# add_action_files(
+# 	DIRECTORY action
+# 	FILES
+# 	TakeOff.action
+# )
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(DEPENDENCIES actionlib_msgs)
