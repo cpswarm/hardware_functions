@@ -1,41 +1,41 @@
 #place positions of the carts
 
-cart0_x: -5.5
-cart0_y: -8
-cart0_theta: -1.57
+cart0_x: 0
+cart0_y: 6
+cart0_theta: 0
   
-cart1_x: -4.4
-cart1_y: -8
-cart1_theta: -1.57
+cart1_x: 0
+cart1_y: 4.5
+cart1_theta: 0
 
-cart2_x: -3.3
-cart2_y: -8
-cart2_theta: -1.57
+cart2_x: 0
+cart2_y: 3
+cart2_theta: 0
 
-cart3_x: -2.2
-cart3_y: -8
-cart3_theta: -1.57
+cart3_x: 0
+cart3_y: 1.5
+cart3_theta: 0
 
-cart4_x: -1.1
-cart4_y: -8
-cart4_theta: -1.57
+cart4_x: 0
+cart4_y: 0
+cart4_theta: 0
 
 cart5_x: 0
-cart5_y: -8
-cart5_theta: -1.57
+cart5_y: -1.5
+cart5_theta: 0
 
-cart6_x: 1.1
-cart6_y: -8
-cart6_theta: -1.57
+cart6_x: 0
+cart6_y: -3
+cart6_theta: 0
 
-cart7_x: 2.2
-cart7_y: -8
-cart7_theta: -1.57
+cart7_x: 0
+cart7_y: -4.5
+cart7_theta: 0
 
-cart8_x: 3.3
-cart8_y: -8
-cart8_theta: -1.57
+cart8_x: 0
+cart8_y: -6
+cart8_theta: 0
 
-cart9_x: 4.4
-cart9_y: -8
-cart9_theta: -1.57
+cart9_x: 0
+cart9_y: -7.5
+cart9_theta: 0
