@@ -88,6 +88,14 @@ class PickAndPlaceComponent(RComponent):
         #client service for clear_costmaps
         #self.clear_costmaps_srv = rospy.ServiceProxy(self.clear_costmap_service_name, std_srvs.srv.Empty)
 
+        #publisher for showing the state at MT
+        self._state_publisher = rospy.Publisher('cps_state', cpswarm_msgs.msg.StateEvent, queue_size=10)
+        self._state_msg = cpswarm_msgs.msg.StateEvent()
+        self._state_msg.swarmio.name = "cps_state"
+        self._state_msg.state = "[Stopped] Idle and Waiting"
+        self._state_publisher.publish(self._state_msg)
+
+
     def reconfig_cb(self,config, level):
         rospy.loginfo("Reconfigure Request Received!")
         return config
@@ -138,7 +146,7 @@ class PickAndPlaceComponent(RComponent):
         self.cancel_goals.append(rospy.Publisher(self.move_base_client + '/cancel', actionlib_msgs.msg.GoalID, queue_size=1))
         self.cancel_goals.append(rospy.Publisher(self.cart_docker_client + '/cancel', actionlib_msgs.msg.GoalID, queue_size=1))
         self.cancel_goals.append(rospy.Publisher(self.elevator_client + '/cancel', actionlib_msgs.msg.GoalID, queue_size=1))
-       
+
         # register this callback to be executed on exiting, before shutting down publishers
         rospy.on_shutdown(self.cancelGoals)
         
@@ -167,18 +175,35 @@ class PickAndPlaceComponent(RComponent):
         return
    
     def generateGoalMove(self, userdata, default_goal):
+        #publisher for showing the state at MT
+        state_publisher = rospy.Publisher('cps_state', cpswarm_msgs.msg.StateEvent, queue_size=10)
+        state_msg = cpswarm_msgs.msg.StateEvent()
+        state_msg.swarmio.name = "cps_state"
+        state_msg.state = "[Moving] [Cart %s] Withdrawing"%self.last_pick_and_place_mission.box_id
+        state_publisher.publish(state_msg)
         move_goal = MoveGoal()
         move_goal.goal.x = 1 
         return move_goal
 
-    def generateGoalMoveBasePick(self, userdata, default_goal):        
+    def generateGoalMoveBasePick(self, userdata, default_goal):
+        #publisher for showing the state at MT
+        state_publisher = rospy.Publisher('cps_state', cpswarm_msgs.msg.StateEvent, queue_size=10)
+        state_msg = cpswarm_msgs.msg.StateEvent()
+        state_msg.swarmio.name = "cps_state"
+        state_msg.state = "[Moving] [Cart %s] Going to pick position"%self.last_pick_and_place_mission.box_id
+        state_publisher.publish(state_msg)        
         move_base_goal = MoveBaseGoal()
         move_base_goal.target_pose = self.last_pick_and_place_mission.target_pose
         return move_base_goal
 
 
     def generateGoalMoveBasePlace(self, userdata, default_goal):
-        
+        #publisher for showing the state at MT
+        state_publisher = rospy.Publisher('cps_state', cpswarm_msgs.msg.StateEvent, queue_size=10)
+        state_msg = cpswarm_msgs.msg.StateEvent()
+        state_msg.swarmio.name = "cps_state"
+        state_msg.state = "[Moving] [Cart %s] Going to place position"%self.last_pick_and_place_mission.box_id
+        state_publisher.publish(state_msg)
         #read place positions
         self.updatePlacePoses()
         move_base_goal = MoveBaseGoal()
@@ -189,6 +214,12 @@ class PickAndPlaceComponent(RComponent):
         return move_base_goal
 
     def generateGoalDock(self, userdata, default_goal):
+        #publisher for showing the state at MT
+        state_publisher = rospy.Publisher('cps_state', cpswarm_msgs.msg.StateEvent, queue_size=10)
+        state_msg = cpswarm_msgs.msg.StateEvent()
+        state_msg.swarmio.name = "cps_state"
+        state_msg.state = "[Moving] [Cart %s] Docking to cart"%self.last_pick_and_place_mission.box_id
+        state_publisher.publish(state_msg)
         dock_goal = DockGoal()
         dock_goal.dock_frame = self.robot_id + "_cart"
         dock_goal.robot_dock_frame = self.robot_id + "_base_footprint"
@@ -196,6 +227,13 @@ class PickAndPlaceComponent(RComponent):
         return dock_goal   
     
     def elevatorup(self, userdata, default_goal):
+        #publisher for showing the state at MT
+        state_publisher = rospy.Publisher('cps_state', cpswarm_msgs.msg.StateEvent, queue_size=10)
+        state_msg = cpswarm_msgs.msg.StateEvent()
+        state_msg.swarmio.name = "cps_state"
+        state_msg.state = "[Moving] [Cart %s] Moving up the elevator"%self.last_pick_and_place_mission.box_id
+        state_publisher.publish(state_msg)
+        #moving up the elevator
         elevator_up_goal = SetElevatorGoal()
         elevator_up_goal.action.action = 1
         return elevator_up_goal
@@ -310,6 +348,13 @@ class PickAndPlaceComponent(RComponent):
 
     def action_callback(self, goal):        
 
+        #publisher for showing the state at MT
+        state_publisher = rospy.Publisher('cps_state', cpswarm_msgs.msg.StateEvent, queue_size=10)
+        state_msg = cpswarm_msgs.msg.StateEvent()
+        state_msg.swarmio.name = "cps_state"
+        state_msg.state = "[Moving] [Cart %s] Executing pick and place"%goal.box_id
+        state_publisher.publish(state_msg)
+        
         try:
             self.tf_listener.waitForTransform(goal.target_pose.header.frame_id, self.robot_id + "_base_footprint", rospy.Time(), rospy.Duration(4.0))
         except tf.Exception:
@@ -325,6 +370,10 @@ class PickAndPlaceComponent(RComponent):
         # Execute SMACH plan
         outcome = self.sm_pick_and_place.execute()
         
+        #publisher for showing the state at MT        
+        state_msg.state = "[Stopped] [Cart %s] Cart managed!"%self.last_pick_and_place_mission.box_id
+        state_publisher.publish(state_msg)
+
         self._response = PickAndPlaceResult()
         self._response.success = outcome == 'succeeded'
         if self._response.success == True:
@@ -362,6 +411,12 @@ def main():
         except rospy.ROSException, e:
             rospy.logerr('%s: %s'%(e, node_name))
 
+    #publisher for showing the state at MT
+    state_publisher = rospy.Publisher('cps_state', cpswarm_msgs.msg.StateEvent, queue_size=10)
+    state_msg = cpswarm_msgs.msg.StateEvent()
+    state_msg.swarmio.name = "cps_state"
+    state_msg.state = "[Stopped] Idle and Waiting"
+    state_publisher.publish(state_msg)
 
     pap = PickAndPlaceComponent(arg_list)
 
