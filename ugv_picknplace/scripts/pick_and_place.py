@@ -162,7 +162,7 @@ class PickAndPlaceComponent(RComponent):
 
     def checkForActionServer(self, server, action_type):
         dummy_action_client = actionlib.SimpleActionClient(server, action_type)
-        if dummy_action_client.wait_for_server(rospy.Duration(3)): 
+        if dummy_action_client.wait_for_server(rospy.Duration(20)): 
             return True
         else:
             return False
