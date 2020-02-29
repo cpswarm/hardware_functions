@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import rospy
-from cpswarm_msgs.msg import NewPlacePoses
+from cpswarm_msgs.msg import NewPlacePoses, NewPlacePose
 
 
-def callback(data):
+def allPosescallback(data):
 
     rospy.set_param('pick_and_place/cart0_theta', data.cart_0_theta.data)
     rospy.set_param('pick_and_place/cart0_x', data.cart_0_x.data)
@@ -36,11 +36,23 @@ def callback(data):
     rospy.set_param('pick_and_place/cart9_x', data.cart_9_x.data)
     rospy.set_param('pick_and_place/cart9_y', data.cart_9_y.data)
 
+def onePosecallback(data):
+
+    param_name = 'pick_and_place/%s_x' %data.name.data
+    rospy.set_param(param_name, data.x.data)
+    param_name = 'pick_and_place/%s_y' %data.name.data
+    rospy.set_param(param_name, data.y.data)
+
+    rospy.loginfo("Place position of cart %s updated to x:%s and y:%s" %(data.name.data, data.x.data, data.y.data))
+
+
 def listener():
 
-    rospy.init_node('place_poses_bridge', anonymous=True)
+    rospy.init_node('place_poses_updater', anonymous=True)
 
-    rospy.Subscriber("place_poses_bridge", NewPlacePoses, callback)
+    rospy.Subscriber("bridge/events/allplace_poses_update", NewPlacePoses, allPosescallback)
+
+    rospy.Subscriber("bridge/events/new_place_pose", NewPlacePose, onePosecallback)
     
     rospy.spin()
 
