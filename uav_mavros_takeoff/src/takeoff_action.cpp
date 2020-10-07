@@ -137,7 +137,9 @@ bool execute_cb(const cpswarm_msgs::TakeoffGoal::ConstPtr& goal, Server* as) {
 		as->setPreempted();
 	} else {
 		as->setSucceeded();
-	}
+    }
+
+    return true;
 }
 
 void state_cb(const mavros_msgs::State::ConstPtr& msg) {
