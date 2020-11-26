@@ -1,0 +1,4 @@
+loop_rate:      10.0  # The frequency in Hz at which to run the control loops.
+queue_size:     10    # The size of the message queue used for publishing and subscribing to topics.
+pos_tolerance:  0.1   # How close the UAV has to be to the desired position after take off in meter.
+stabilize_time: 5.0   # The time in second to stabilize position after takeoff.

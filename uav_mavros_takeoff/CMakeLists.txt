@@ -109,22 +109,27 @@ catkin_package(CATKIN_DEPENDS roscpp mavros message_runtime)
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
 )
 
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+## Declare a C++ library
+add_library(
+  takeoff
+  src/lib/takeoff.cpp
+)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(takeoff_service src/takeoff_service.cpp)
 add_executable(takeoff_action src/takeoff_action.cpp)
+
+## Add cmake target dependencies of the library
+## as an example, code may need to be generated before libraries
+## either from message generation or dynamic reconfigure
+# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -138,8 +143,8 @@ add_dependencies(takeoff_service ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(takeoff_action ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(takeoff_service ${catkin_LIBRARIES})
-target_link_libraries(takeoff_action ${catkin_LIBRARIES})
+target_link_libraries(takeoff_service takeoff ${catkin_LIBRARIES})
+target_link_libraries(takeoff_action takeoff ${catkin_LIBRARIES})
 
 #############
 ## Install ##

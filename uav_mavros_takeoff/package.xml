@@ -1,16 +1,14 @@
 <?xml version="1.0"?>
 <package format="2">
 	<name>uav_mavros_takeoff</name>
-	<version>0.0.1</version>
-	<description>Mavros TakeOff package</description>
+	<version>0.0.2</version>
+	<description>A package that provides FCU firmware independent take off functionality based on MAVROS.</description>
 
 	<!-- One maintainer tag required, multiple allowed, one person per tag -->
 	<maintainer email="prato@ismb.it">Gianluca Prato</maintainer>
-
+	<maintainer email="sende@lakeside-labs.com">Micha Sende</maintainer>
 
 	<!-- One license tag required, multiple allowed, one license per tag -->
-	<!-- Commonly used license strings: -->
-	<!-- BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
 	<license>BSD</license>
 
 	<!-- Url tags are optional, but multiple are allowed, one per tag -->
