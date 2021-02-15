@@ -53,6 +53,7 @@ bool takeoff::execute (double altitude)
 	// send a few setpoints (current position) before starting
 	geometry_msgs::PoseStamped goal_position;
 	if (fcu == "px4") {
+		sleep(2);
 		goal_position.pose.position.x = position.pose.position.x;
 		goal_position.pose.position.y = position.pose.position.y;
 		goal_position.pose.position.z = position.pose.position.z;
@@ -70,7 +71,7 @@ bool takeoff::execute (double altitude)
 		return false;
 
 	// take off
-	goal_position.pose.position.z = goal_position.pose.position.z + altitude;
+	goal_position.pose.position.z += altitude;
 	if (fcu == "px4") {
 		ROS_DEBUG("TAKEOFF - Using PX4 FCU");
 		goal_pub.publish(goal_position);
