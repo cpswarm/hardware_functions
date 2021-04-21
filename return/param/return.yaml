@@ -1,0 +1,3 @@
+loop_rate:      1.0   # The frequency in Hz at which to run the control loops.
+queue_size:     1     # The size of the message queue used for publishing and subscribing to topics.
+pos_tolerance:  0.1   # How close the CPS has to return to the home position.

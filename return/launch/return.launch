@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="id" default="1" />
+	<arg name="output" default="screen" />
+
+	<!-- Return action -->
+    <node pkg="return" type="return_action" name="return_$(arg id)" output="$(arg output)">
+		<rosparam command="load" file="$(find return)/param/return.yaml" />
+	</node>
+
+</launch>
