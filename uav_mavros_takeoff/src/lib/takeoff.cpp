@@ -50,34 +50,50 @@ bool takeoff::execute (double altitude)
 	// the setpoint publishing rate must be faster than 2 hz on px4
 	ros::Rate rate(loop_rate);
 
-	// send a few setpoints (current position) before starting
 	geometry_msgs::PoseStamped goal_position;
-	if (fcu == "px4") {
-		sleep(2);
-		goal_position.pose.position.x = position.pose.position.x;
-		goal_position.pose.position.y = position.pose.position.y;
-		goal_position.pose.position.z = position.pose.position.z;
-		goal_position.pose.orientation = position.pose.orientation;
-		goal_pub.publish(goal_position);
-		sleep(2);
-	}
-
-	// enable offboard mode
-	if (set_offboard() == false)
-		return false;
-
-	// arm vehicle
-	if (arm() == false)
-		return false;
-
-	// take off
+	goal_position.pose = position.pose;
 	goal_position.pose.position.z += altitude;
+
 	if (fcu == "px4") {
 		ROS_DEBUG("TAKEOFF - Using PX4 FCU");
+
+		// send a few setpoints (current position) before starting
+		sleep(2);
+		goal_pub.publish(position);
+		sleep(2);
+
+		// set autonomous mode
+		if (set_mode("OFFBOARD") == false)
+			return false;
+
+		// arm vehicle
+		if (arm() == false)
+			return false;
+
+		// take off in semi-autonomous mode
+		if (set_mode("AUTO.TAKEOFF") == false)
+			return false;
+		sleep(5);
+
+		// switch back to autonomous mode
+		if (set_mode("OFFBOARD") == false)
+			return false;
+
+		// move to desired altitude
 		goal_pub.publish(goal_position);
 	}
-	if (fcu == "apm") {
+	else if (fcu == "apm") {
 		ROS_DEBUG("TAKEOFF - Using Ardupilot FCU");
+
+		// set autonomous mode
+		if (set_mode("GUIDED") == false)
+			return false;
+
+		// arm vehicle
+		if (arm() == false)
+			return false;
+
+		// take off
 		mavros_msgs::CommandTOL takeoff_request;
 		takeoff_request.request.altitude = altitude;
 		while (!takeoff_request.response.success) {
@@ -85,6 +101,10 @@ bool takeoff::execute (double altitude)
 			ros::spinOnce();
 			rate.sleep();
 		}
+	}
+	else {
+		ROS_FATAL("TAKEOFF - Unknown FCU firmware, cannot perform takeoff");
+		return false;
 	}
 
 	// wait until take off completed
@@ -119,27 +139,18 @@ bool takeoff::arm ()
 	}
 }
 
-bool takeoff::set_offboard ()
+bool takeoff::set_mode (string mode)
 {
 	// initialize mode message
-	mavros_msgs::SetMode set_offboard;
-	if (fcu == "px4") {
-		set_offboard.request.custom_mode = "OFFBOARD";
-	}
-	else if (fcu == "apm") {
-		set_offboard.request.custom_mode = "GUIDED";
-	}
-	else {
-		ROS_FATAL("TAKEOFF - Unknown FCU firmware, cannot perform takeoff");
-		return false;
-	}
+	mavros_msgs::SetMode set_mode;
+	set_mode.request.custom_mode = mode;
 
-	// set mode to offboard
-	if (set_mode_client.call(set_offboard) && set_offboard.response.mode_sent) {
-		ROS_INFO("TAKEOFF - Offboard enabled");
+	// set mode
+	if (set_mode_client.call(set_mode) && set_mode.response.mode_sent) {
+		ROS_INFO("TAKEOFF - Changed to %s mode", mode.c_str());
 		return true;
 	} else {
-		ROS_ERROR("TAKEOFF - Failed to set offboard mode");
+		ROS_ERROR("TAKEOFF - Failed to change to %s mode", mode.c_str());
 		return false;
 	}
 }

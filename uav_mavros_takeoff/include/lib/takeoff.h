@@ -38,10 +38,11 @@ private:
     bool arm ();
 
     /**
-     * @brief Set the FCU mode to offboard to enable autonomous flight.
+     * @brief Set the FCU to a given mode.
+     * @param The mode to change to.
      * @return Whether the mode change succeeded.
      */
-    bool set_offboard ();
+    bool set_mode (string mode);
 
     /**
      * @brief Callback function to receive the local position of the UAV.
