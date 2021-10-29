@@ -73,7 +73,7 @@ bool takeoff::execute (double altitude)
 		// take off in semi-autonomous mode
 		if (set_mode("AUTO.TAKEOFF") == false)
 			return false;
-		sleep(5);
+		sleep(1);
 
 		// switch back to autonomous mode
 		if (set_mode("OFFBOARD") == false)
