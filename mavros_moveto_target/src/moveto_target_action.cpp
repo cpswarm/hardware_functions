@@ -36,7 +36,7 @@ bool target_updated;
 bool listen_to_update;
 double pos_tolerance;
 double freq;
-int target_id;
+string target_id;
 
 //**********************************************************************************************************
 bool isAtPosition(geometry_msgs::Pose pos, double tolerance) {
