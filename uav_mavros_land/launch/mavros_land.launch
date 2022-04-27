@@ -1,11 +1,13 @@
 <?xml version="1.0"?>
 <launch>
 	<arg name="id" default="1" />
+	<arg name="fcu" default="px4" />
 	<arg name="output" default="screen" />
-	
+
 	<!-- Land Service NODE -->
     <node pkg="uav_mavros_land" name="mavros_land_$(arg id)" type="land_service" output="$(arg output)">
 		<rosparam command="load" file="$(find uav_mavros_land)/param/mavros_land_params.yaml" />
+		<param name="fcu" value="$(arg fcu)" />
 	</node>
 
 </launch>

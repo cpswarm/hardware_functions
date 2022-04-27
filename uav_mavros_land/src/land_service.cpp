@@ -29,10 +29,13 @@ bool isAtAltitude(double altitude, double tolerance) {
 	return abs(altitude - local_position.pose.position.z) < tolerance;
 }
 
-void setMode() {
+void setMode(string fcu) {
 	mavros_msgs::SetMode offb_set_mode;
 	offb_set_mode.request.base_mode = 0;
-	offb_set_mode.request.custom_mode = "AUTO.LAND";
+	if (fcu == "apm")
+		offb_set_mode.request.custom_mode = "LAND";
+	else
+		offb_set_mode.request.custom_mode = "AUTO.LAND";
 
 	if (set_mode_client.call(offb_set_mode)) {
 		ROS_INFO("LAND - SetMode success: %d", offb_set_mode.response.mode_sent);
@@ -70,10 +73,19 @@ bool execute_cb(std_srvs::Empty::Request &request, std_srvs::Empty::Response &re
 
 	ros::Rate rate(freq);
 
+	// check if firmware is px4 or ardupilot
+	ros::NodeHandle nh;
+	string fcu;
+	nh.getParam(ros::this_node::getName() + "/fcu", fcu);
+	if (fcu != "px4" && fcu != "apm") {
+		ROS_FATAL("LAND - Unknown FCU firmware, cannot land");
+		return false;
+	}
+
 	////////////////////////////////////////////
 	/////////////////SET LANDING MODE///////////
 	////////////////////////////////////////////
-	setMode();
+	setMode(fcu);
 
 	//Stop pos_controller publishing
 	std_msgs::Empty stop_msg;
