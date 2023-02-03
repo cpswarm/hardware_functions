@@ -38,7 +38,7 @@ void setMode(string fcu) {
 		offb_set_mode.request.custom_mode = "AUTO.LAND";
 
 	if (set_mode_client.call(offb_set_mode)) {
-		ROS_INFO("LAND - SetMode success: %d", offb_set_mode.response.mode_sent);
+		ROS_INFO_ONCE("LAND - SetMode success: %d", offb_set_mode.response.mode_sent);
 	} else {
 		ROS_ERROR("LAND - Failed SetMode");
 	}
@@ -82,11 +82,6 @@ bool execute_cb(std_srvs::Empty::Request &request, std_srvs::Empty::Response &re
 		return false;
 	}
 
-	////////////////////////////////////////////
-	/////////////////SET LANDING MODE///////////
-	////////////////////////////////////////////
-	setMode(fcu);
-
 	//Stop pos_controller publishing
 	std_msgs::Empty stop_msg;
 	stop_pos_pub.publish(stop_msg);
@@ -95,6 +90,11 @@ bool execute_cb(std_srvs::Empty::Request &request, std_srvs::Empty::Response &re
 	/////////////////LANDING////////////////////
 	////////////////////////////////////////////
 	while (ros::ok() && !isAtAltitude(0, pos_tolerance)) {
+		////////////////////////////////////////////
+		/////////////////SET LANDING MODE///////////
+		////////////////////////////////////////////
+		setMode(fcu);
+
 		ros::spinOnce();
 		rate.sleep();
 	}
