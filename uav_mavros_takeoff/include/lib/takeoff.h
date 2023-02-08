@@ -24,11 +24,17 @@ public:
     takeoff ();
 
     /**
-     * @brief Perform the take off.
+     * @brief Initiate the take off.
      * @param altitude: The altitude to take off to.
-     * @return Whether the take off succeeded.
+     * @return Whether the take off started successfully.
      */
     bool execute (double altitude);
+
+    /**
+     * @brief Wait until desired take off altitude is reached.
+     * @return Whether this altitude has been reached yet.
+     */
+    bool wait ();
 
 private:
     /**
@@ -67,9 +73,14 @@ private:
     ros::ServiceClient set_mode_client;
 
     /**
-     * @brief Service client to take off with ardupilot FCU.
+     * @brief Service client to take off with ArduPilot FCU.
      */
-    ros::ServiceClient takeoff_client;
+    ros::ServiceClient apm_takeoff_client;
+
+    /**
+     * @brief Service request message to take off with ArduPilot FCU.
+     */
+    mavros_msgs::CommandTOL apm_takeoff_request;
 
     /**
      * @brief Subscriber to get the current FCU state of the UAV.
@@ -92,7 +103,7 @@ private:
     double loop_rate;
 
     /**
-     * @brief How close the UAV has to be to the desired position after take off.
+     * @brief How close the UAV has to be to the desired altitude after take off.
      */
     double pos_tolerance;
 
@@ -115,6 +126,11 @@ private:
      * @brief The current position of the UAV.
      */
     geometry_msgs::PoseStamped position;
+
+    /**
+     * @brief The desired position to reach when take off completed.
+     */
+	geometry_msgs::PoseStamped goal_position;
 
     /**
      * @brief Whether a position has been received from the FCU.

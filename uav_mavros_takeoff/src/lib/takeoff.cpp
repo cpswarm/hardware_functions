@@ -18,7 +18,7 @@ takeoff::takeoff ()
 	// ros communication
 	arming_client = nh.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
 	set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("mavros/set_mode");
-	takeoff_client = nh.serviceClient<mavros_msgs::CommandTOL>("mavros/cmd/takeoff");
+	apm_takeoff_client = nh.serviceClient<mavros_msgs::CommandTOL>("mavros/cmd/takeoff");
 	state_sub = nh.subscribe<mavros_msgs::State>("mavros/state", queue_size, &takeoff::state_cb, this);
 	pos_sub = nh.subscribe<geometry_msgs::PoseStamped>("pos_provider/pose", queue_size, &takeoff::position_cb, this);
 	goal_pub = nh.advertise<geometry_msgs::PoseStamped>("pos_controller/goal_position", queue_size);
@@ -50,7 +50,6 @@ bool takeoff::execute (double altitude)
 	// the setpoint publishing rate must be faster than 2 hz on px4
 	ros::Rate rate(loop_rate);
 
-	geometry_msgs::PoseStamped goal_position;
 	goal_position.pose = position.pose;
 	goal_position.pose.position.z += altitude;
 
@@ -94,32 +93,36 @@ bool takeoff::execute (double altitude)
 			return false;
 
 		// take off
-		mavros_msgs::CommandTOL takeoff_request;
-		takeoff_request.request.altitude = altitude;
-		while (!takeoff_request.response.success) {
-			takeoff_client.call(takeoff_request);
-			ros::spinOnce();
-			rate.sleep();
-		}
+		apm_takeoff_request.request.altitude = altitude;
+		apm_takeoff_client.call(apm_takeoff_request);
 	}
 	else {
 		ROS_FATAL("TAKEOFF - Unknown FCU firmware, cannot perform takeoff");
 		return false;
 	}
 
-	// wait until take off completed
-	while (abs(goal_position.pose.position.z - position.pose.position.z) > pos_tolerance) {
-		ros::spinOnce();
-		rate.sleep();
+	// everything worked as expected
+	return true;
+}
+
+bool takeoff::wait ()
+{
+	// repeat take of request for ardupilot
+	if (fcu == "apm" && apm_takeoff_request.response.success == false) {
+		apm_takeoff_client.call(apm_takeoff_request);
 	}
 
-	// stabilize position
-	ROS_DEBUG("TAKEOFF - Waiting %.2f seconds to stabilize", stabilize_time);
-	sleep(stabilize_time);
-	ros::spinOnce();
+	// altitude not yet reached
+	if (abs(goal_position.pose.position.z - position.pose.position.z) > pos_tolerance) {
+		return false;
+	}
 
-    ROS_DEBUG("TAKEOFF - Completed, reached position (%.2f,%.2f,%.2f)", position.pose.position.x, position.pose.position.y, position.pose.position.z);
-	return true;
+	// altitude reached, stabilize
+	else {
+		ROS_DEBUG("TAKEOFF - Waiting %.2f seconds to stabilize", stabilize_time);
+		sleep(stabilize_time);
+		return true;
+	}
 }
 
 bool takeoff::arm ()

@@ -7,17 +7,33 @@ bool execute_cb(const cpswarm_msgs::TakeoffGoal::ConstPtr& goal, Server* as)
 {
     ROS_DEBUG("TAKEOFF - Executing take off action...");
 
-	// perform take off
+	// initiate take off
 	bool success = to->execute(goal->altitude);
+
+	// take off failed
+	if (success == false) {
+		as->setAborted();
+    	ROS_DEBUG("TAKEOFF - Failed");
+		return true;
+	}
+
+	// wait until altitude is reached
+	bool reached = false;
+	while (reached == false && as->isPreemptRequested() == false) {
+		reached = to->wait();
+	}
 
 	if (as->isPreemptRequested()) {
 		as->setPreempted();
+    	ROS_DEBUG("TAKEOFF - Preempted");
 	}
-	else if (success) {
+	else if (reached) {
 		as->setSucceeded();
+    	ROS_DEBUG("TAKEOFF - Completed");
     }
 	else {
 		as->setAborted();
+    	ROS_DEBUG("TAKEOFF - Failed");
 	}
 
     return true;
