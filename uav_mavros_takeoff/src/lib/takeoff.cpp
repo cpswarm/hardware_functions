@@ -53,6 +53,8 @@ bool takeoff::execute (double altitude)
 	goal_position.pose = position.pose;
 	goal_position.pose.position.z += altitude;
 
+	ROS_DEBUG("Take off to altitude %.2f", goal_position.pose.position.z);
+
 	if (fcu == "px4") {
 		ROS_DEBUG("TAKEOFF - Using PX4 FCU");
 
