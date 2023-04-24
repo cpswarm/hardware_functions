@@ -63,11 +63,20 @@ bool action_server::out_of_bounds (geometry_msgs::Pose pose)
 
 bool action_server::reached (geometry_msgs::Pose goal)
 {
-    ROS_DEBUG("Yaw %.2f --> %.2f", get_yaw(pose), get_yaw(goal));
-    ROS_DEBUG("Pose (%.2f,%.2f) --> (%.2f,%.2f)", pose.position.x, pose.position.y, goal.position.x, goal.position.y);
-    ROS_DEBUG("%.2f > %.2f OR %.2f > %.2f", dist(pose, goal), goal_tolerance, abs(remainder(get_yaw(pose) - get_yaw(goal), 2*M_PI)), yaw_tolerance);
+    // check if orientation reached
+    if (goal.orientation.x != 0 || goal.orientation.y != 0 || goal.orientation.z != 0 || goal.orientation.w != 0) {
+        ROS_DEBUG("Yaw %.2f --> %.2f", get_yaw(pose), get_yaw(goal));
+        // not reached yet
+        if (abs(remainder(get_yaw(pose) - get_yaw(goal), 2*M_PI)) > yaw_tolerance) {
+            ROS_DEBUG("%.2f > %.2f", abs(remainder(get_yaw(pose) - get_yaw(goal), 2*M_PI)), yaw_tolerance);
+            return false;
+        }
+    }
 
-    return dist(pose, goal) <= goal_tolerance && abs(remainder(get_yaw(pose) - get_yaw(goal), 2*M_PI)) <= yaw_tolerance;
+    // check if position reached
+    ROS_DEBUG("Pose (%.2f,%.2f) --> (%.2f,%.2f)", pose.position.x, pose.position.y, goal.position.x, goal.position.y);
+    ROS_DEBUG("%.2f > %.2f", dist(pose, goal), goal_tolerance);
+    return dist(pose, goal) <= goal_tolerance;
 }
 
 void action_server::pose_callback (const geometry_msgs::PoseStamped::ConstPtr& msg)
