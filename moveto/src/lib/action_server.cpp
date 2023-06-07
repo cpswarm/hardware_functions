@@ -38,7 +38,7 @@ action_server::~action_server ()
 
 double action_server::dist (geometry_msgs::Pose p1, geometry_msgs::Pose p2)
 {
-    return hypot(p1.position.x - p2.position.x, p1.position.y - p2.position.y);
+    return hypot(p1.position.x - p2.position.x, p1.position.y - p2.position.y, p1.position.z - p2.position.z);
 }
 
 double action_server::get_yaw (geometry_msgs::Pose pose)
