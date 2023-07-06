@@ -74,7 +74,7 @@ bool action_server::reached (geometry_msgs::Pose goal)
     }
 
     // check if position reached
-    ROS_DEBUG("Pose (%.2f,%.2f) --> (%.2f,%.2f)", pose.position.x, pose.position.y, goal.position.x, goal.position.y);
+    ROS_DEBUG("Pose (%.2f,%.2f,%2.f) --> (%.2f,%.2f,%.2f)", pose.position.x, pose.position.y, pose.position.z, goal.position.x, goal.position.y, goal.position.z);
     ROS_DEBUG("%.2f > %.2f", dist(pose, goal), goal_tolerance);
     return dist(pose, goal) <= goal_tolerance;
 }
@@ -99,12 +99,12 @@ void action_server::moveto_callback(const move_base_msgs::MoveBaseGoal::ConstPtr
 
     // goal is out of bounds
     if (out_of_bounds(goal->target_pose.pose)) {
-        ROS_ERROR("Cannot move to (%.2f,%.2f) because it is out of bounds!", goal->target_pose.pose.position.x, goal->target_pose.pose.position.y);
+        ROS_ERROR("Cannot move to (%.2f,%.2f,%.2f) because it is out of bounds!", goal->target_pose.pose.position.x, goal->target_pose.pose.position.y, goal->target_pose.pose.position.z);
         server.setAborted();
         return;
     }
 
-    ROS_INFO("Move to (%.2f,%.2f)", goal->target_pose.pose.position.x, goal->target_pose.pose.position.y);
+    ROS_INFO("Move to (%.2f,%.2f,%.2f)", goal->target_pose.pose.position.x, goal->target_pose.pose.position.y, goal->target_pose.pose.position.z);
 
     // wait until cps reached goal
     while (ok() && reached(goal->target_pose.pose) == false && server.isPreemptRequested() == false) {
