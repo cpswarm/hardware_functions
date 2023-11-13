@@ -11,6 +11,7 @@ takeoff::takeoff ()
 	nh.getParam(ros::this_node::getName() + "/pos_tolerance", pos_tolerance);
 	nh.getParam(ros::this_node::getName() + "/stabilize_time", stabilize_time);
 	nh.getParam(ros::this_node::getName() + "/fcu", fcu);
+	nh.getParam(ros::this_node::getName() + "/uav", uav);
 
 	// initialize global variables
 	position_received = false;
@@ -83,8 +84,8 @@ bool takeoff::execute (double altitude)
 		// move to desired altitude
 		goal_pub.publish(goal_position);
 	}
-	else if (fcu == "apm") {
-		ROS_DEBUG("TAKEOFF - Using Ardupilot FCU");
+	else if (fcu == "apm" && uav == "copter") {
+		ROS_DEBUG("TAKEOFF - Using ArduCopter FCU");
 
 		// set autonomous mode
 		if (set_mode("GUIDED") == false)
@@ -97,6 +98,21 @@ bool takeoff::execute (double altitude)
 		// take off
 		apm_takeoff_request.request.altitude = altitude;
 		apm_takeoff_client.call(apm_takeoff_request);
+	}
+	else if (fcu == "apm" && uav == "plane") {
+		ROS_DEBUG("TAKEOFF - Using ArduPlane FCU");
+
+		// set autonomous mode
+		if (set_mode("TAKEOFF") == false)
+			return false;
+
+		// arm vehicle
+		// if (arm() == false)
+		// 	return false;
+
+		// take off
+		// apm_takeoff_request.request.altitude = altitude;
+		// apm_takeoff_client.call(apm_takeoff_request);
 	}
 	else {
 		ROS_FATAL("TAKEOFF - Unknown FCU firmware, cannot perform takeoff");

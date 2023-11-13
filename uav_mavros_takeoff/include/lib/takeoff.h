@@ -118,6 +118,11 @@ private:
     string fcu;
 
     /**
+     * @brief The vehicle type in combination with apm fcu, either copter or plane.
+     */
+    string uav;
+
+    /**
      * @brief The current state of the FCU.
      */
     mavros_msgs::State state;
