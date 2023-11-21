@@ -8,6 +8,7 @@
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/State.h>
 #include <mavros_msgs/CommandTOL.h>
+#include <mavros_msgs/WaypointPush.h>
 
 using namespace std;
 using namespace ros;
@@ -76,11 +77,14 @@ private:
      * @brief Service client to take off with ArduPilot FCU.
      */
     ros::ServiceClient apm_takeoff_client;
+    ros::ServiceClient apm_mission_client;
 
     /**
      * @brief Service request message to take off with ArduPilot FCU.
      */
     mavros_msgs::CommandTOL apm_takeoff_request;
+    mavros_msgs::WaypointPush apm_mission_request;
+	mavros_msgs::Waypoint gps_home;
 
     /**
      * @brief Subscriber to get the current FCU state of the UAV.

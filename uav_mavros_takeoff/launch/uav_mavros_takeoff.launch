@@ -5,12 +5,18 @@
 	<arg name="ros_api" default="action" />
 	<arg name="fcu" default="px4" />
 	<arg name="uav" default="copter" />
+    <arg name="lon" default="0" /> <!-- initial placement of UAV -->
+    <arg name="lat" default="0" /> <!-- it is used as origin for a local coordinate system -->
+    <arg name="alt" default="0" /> <!-- above mean sea level (MSL) -->
 
 	<!-- Take off action/service -->
     <node pkg="uav_mavros_takeoff" name="uav_mavros_takeoff_$(arg id)" type="takeoff_$(arg ros_api)" output="$(arg output)">
 		<rosparam command="load" file="$(find uav_mavros_takeoff)/param/uav_mavros_takeoff.yaml" />
 		<param name="fcu" value="$(arg fcu)" />
 		<param name="uav" value="$(arg uav)" />
+		<param name="lon" value="$(arg lon)" />
+		<param name="lat" value="$(arg lat)" />
+		<param name="alt" value="$(arg alt)" />
 	</node>
 
 </launch>
