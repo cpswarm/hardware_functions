@@ -77,14 +77,21 @@ private:
      * @brief Service client to take off with ArduPilot FCU.
      */
     ros::ServiceClient apm_takeoff_client;
+
+    /**
+     * @brief Service client to take to send a mission to ArduPilot FCU.
+     */
     ros::ServiceClient apm_mission_client;
 
     /**
      * @brief Service request message to take off with ArduPilot FCU.
      */
     mavros_msgs::CommandTOL apm_takeoff_request;
+
+    /**
+     * @brief Service request message to send a mission to ArduPilot FCU.
+     */
     mavros_msgs::WaypointPush apm_mission_request;
-	mavros_msgs::Waypoint gps_home;
 
     /**
      * @brief Subscriber to get the current FCU state of the UAV.
@@ -125,6 +132,11 @@ private:
      * @brief The vehicle type in combination with apm fcu, either copter or plane.
      */
     string uav;
+
+    /**
+     * @brief GPS coordinates of the UAV home position (altitude AMSL).
+     */
+	mavros_msgs::Waypoint gps_home;
 
     /**
      * @brief The current state of the FCU.

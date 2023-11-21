@@ -108,33 +108,6 @@ bool takeoff::execute (double altitude)
 		apm_takeoff_request.request.altitude = altitude;
 		apm_takeoff_client.call(apm_takeoff_request);
 	}
-	// else if (fcu == "apm" && uav == "plane") {
-	// 	ROS_DEBUG("TAKEOFF - Using ArduPlane FCU");
-
-	// 	// set autonomous mode
-	// 	if (set_mode("TAKEOFF") == false)
-	// 		return false;
-
-	// 	// arm vehicle
-	// 	if (arm() == false)
-	// 		return false;
-
-	// 	// take off
-	// 	apm_takeoff_request.request.min_pitch = 15.0;
-	// 	apm_takeoff_request.request.yaw = 0.0;
-	// 	apm_takeoff_request.request.latitude = 46.6128; // increased from 7 to 8
-	// 	apm_takeoff_request.request.longitude = 14.2652;
-	// 	apm_takeoff_request.request.altitude = altitude;
-	// 	apm_takeoff_client.call(apm_takeoff_request);
-
-	// 	if (apm_takeoff_request.response.success) {
-	// 		ROS_INFO("Take off succeeded with result %d.", apm_takeoff_request.response.result);
-	// 	}
-	// 	else {
-	// 		ROS_ERROR("Take off failed with result %d!", apm_takeoff_request.response.result);
-	// 		return false;
-	// 	}
-	// }
 	else if (fcu == "apm" && uav == "plane") {
 		ROS_DEBUG("TAKEOFF - Using ArduPlane FCU");
 
@@ -148,31 +121,31 @@ bool takeoff::execute (double altitude)
 		waypoint.autocontinue = true;
 
 		// home position
-		waypoint.frame = 0; // relative altitude
+		waypoint.frame = 0;    // altitude amsl
 		waypoint.command = 16; // waypoint: https://mavlink.io/en/messages/common.html#MAV_CMD_NAV_WAYPOINT
-		waypoint.param1 = 0; // hold time in seconds
-		waypoint.param2 = 0; // acceptance radius in meter
-		waypoint.param3 = 0; // pass radius in meter
-		waypoint.param4 = 0; // yaw angle in degrees
+		waypoint.param1 = 0;   // hold time in seconds
+		waypoint.param2 = 0;   // acceptance radius in meter
+		waypoint.param3 = 0;   // pass radius in meter
+		waypoint.param4 = 0;   // yaw angle in degrees
 		apm_mission_request.request.waypoints.push_back(waypoint);
 
 		// take off
-		waypoint.frame = 3; // relative altitude
+		waypoint.frame = 3;    // altitude agl
 		waypoint.command = 22; // take off: https://mavlink.io/en/messages/common.html#MAV_CMD_NAV_TAKEOFF
-		waypoint.param1 = 15.0; // minimum pitch in degrees
-		waypoint.param2 = 0; // empty
-		waypoint.param3 = 0; // empty
-		waypoint.param4 = 0; // yaw angle in degrees
+		waypoint.param1 = 15;  // minimum pitch in degrees
+		waypoint.param2 = 0;   // empty
+		waypoint.param3 = 0;   // empty
+		waypoint.param4 = 0;   // yaw angle in degrees
 		waypoint.z_alt = altitude;
 		apm_mission_request.request.waypoints.push_back(waypoint);
 
 		// loiter
-		waypoint.frame = 3; // relative altitude
+		waypoint.frame = 3;    // altitude agl
 		waypoint.command = 17; // loiter: https://mavlink.io/en/messages/common.html#MAV_CMD_NAV_LOITER_UNLIM
-		waypoint.param1 = 0; // empty
-		waypoint.param2 = 0; // empty
-		waypoint.param3 = 10; // radius in meter
-		waypoint.param4 = 0; // yaw angle in degrees
+		waypoint.param1 = 0;   // empty
+		waypoint.param2 = 0;   // empty
+		waypoint.param3 = 10;  // radius in meter
+		waypoint.param4 = 0;   // yaw angle in degrees
 		waypoint.z_alt = altitude;
 		apm_mission_request.request.waypoints.push_back(waypoint);
 
