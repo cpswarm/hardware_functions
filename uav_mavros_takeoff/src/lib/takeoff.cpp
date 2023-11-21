@@ -189,12 +189,16 @@ bool takeoff::wait ()
 		return false;
 	}
 
-	// altitude reached, stabilize
-	else {
-		ROS_DEBUG("TAKEOFF - Waiting %.2f seconds to stabilize", stabilize_time);
-		sleep(stabilize_time);
-		return true;
+	// switch to autonomous flight mode for ardupilot plane
+	if (fcu == "apm" && uav == "plane") {
+		if (set_mode("GUIDED") == false)
+			return false;
 	}
+
+	// altitude reached, stabilize
+	ROS_DEBUG("TAKEOFF - Waiting %.2f seconds to stabilize", stabilize_time);
+	sleep(stabilize_time);
+	return true;
 }
 
 bool takeoff::arm ()
